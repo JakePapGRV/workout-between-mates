@@ -1,0 +1,6 @@
+# Local tooling / OS cruft — not needed for deployment
+.claude/
+node_modules/
+*.log
+.DS_Store
+Thumbs.db

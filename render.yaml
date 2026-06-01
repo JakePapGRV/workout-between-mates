@@ -1,0 +1,14 @@
+# Render Blueprint — static hosting for the Workout Challenge app.
+#
+# You don't strictly need this file: you can also create a "Static Site"
+# in the Render dashboard, point it at this repo, leave the Build Command
+# blank, and set the Publish Directory to "." — that's it.
+#
+# This file just lets Render configure itself automatically if you use
+# the "New Blueprint" option instead.
+services:
+  - type: web
+    name: workout-challenge
+    runtime: static
+    buildCommand: "echo no build needed"
+    staticPublishPath: .

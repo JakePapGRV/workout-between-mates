@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <title>Workout Challenge</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== Header ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🏋️</span>
+      <div>
+        <h1>Workout Challenge</h1>
+        <p id="challengeProgress" class="muted">—</p>
+      </div>
+    </div>
+    <button id="whoami" class="who hidden" type="button"></button>
+  </header>
+
+  <!-- ===== Setup banner (shown until config.js is filled in) ===== -->
+  <section id="setupBanner" class="card warn hidden">
+    <h2>⚙️ Almost there — finish setup</h2>
+    <p>This app needs your Supabase keys before it can store anything.</p>
+    <ol>
+      <li>Create a free project at <strong>supabase.com</strong>.</li>
+      <li>Open <strong>SQL Editor</strong> and run the contents of <code>schema.sql</code>.</li>
+      <li>Open <code>config.js</code> and paste your <strong>Project URL</strong> and <strong>anon key</strong> (Project Settings → API).</li>
+      <li>Reload this page.</li>
+    </ol>
+    <p class="muted">Full walkthrough is in <code>README.md</code>.</p>
+  </section>
+
+  <!-- ===== Identity picker ===== -->
+  <section id="identity" class="card hidden">
+    <h2>Who are you?</h2>
+    <p class="muted">Pick yourself once — this device will remember.</p>
+    <div id="identityList" class="pickgrid"></div>
+    <form id="addMateForm" class="inline-form">
+      <input id="addMateName" type="text" placeholder="Add a mate…" maxlength="40" />
+      <button type="submit" class="btn ghost">Add</button>
+    </form>
+  </section>
+
+  <!-- ===== Main app ===== -->
+  <main id="app" class="hidden">
+    <!-- Timer -->
+    <section class="card timer-card">
+      <div class="timer-head">
+        <h2>Time a workout</h2>
+        <span id="weekChip" class="chip">—</span>
+      </div>
+      <div id="timerDisplay" class="timer-display">00:00</div>
+      <p id="timerHint" class="muted center">Tap start when you begin. Min 30:00 to count.</p>
+      <div class="timer-controls">
+        <button id="startBtn" class="btn big primary" type="button">▶ Start</button>
+        <button id="stopBtn" class="btn big danger hidden" type="button">■ Stop &amp; log</button>
+        <button id="discardBtn" class="btn ghost hidden" type="button">Discard</button>
+      </div>
+      <div class="secondary-actions">
+        <button id="manualBtn" class="btn link" type="button">＋ Log past workout</button>
+        <button id="sickBtn" class="btn link" type="button">🤒 Log sick day</button>
+      </div>
+    </section>
+
+    <!-- Leaderboard -->
+    <section class="card">
+      <div class="card-head">
+        <h2>🏆 Leaderboard</h2>
+        <button id="refreshBtn" class="btn link" type="button">↻ Refresh</button>
+      </div>
+      <div id="leaderboard" class="leaderboard"></div>
+      <p class="muted center small">Tap anyone to see their workouts.</p>
+    </section>
+
+    <!-- Payout -->
+    <section class="card payout-card">
+      <h2>💸 If it ended today</h2>
+      <div id="payout"></div>
+    </section>
+
+    <!-- Rules -->
+    <section class="card">
+      <details>
+        <summary><h2 class="inline">📜 The rules</h2></summary>
+        <ul id="rulesList" class="rules"></ul>
+      </details>
+    </section>
+  </main>
+
+  <!-- ===== Overlays ===== -->
+  <div id="overlay" class="overlay hidden">
+    <!-- Log-after-timer -->
+    <div id="logModal" class="modal hidden">
+      <h3>Workout done 💪</h3>
+      <p class="big-duration"><span id="logDuration">—</span></p>
+      <p id="logWarn" class="warn-text hidden">Under 30 min — this won't count, but you can still log it.</p>
+      <label>What did you do?</label>
+      <input id="logType" type="text" placeholder="e.g. Push day, 5k run, footy…" maxlength="120" />
+      <div class="modal-actions">
+        <button id="logSave" class="btn primary" type="button">Save</button>
+        <button class="btn ghost close-overlay" type="button">Discard</button>
+      </div>
+    </div>
+
+    <!-- Manual log -->
+    <div id="manualModal" class="modal hidden">
+      <h3>Log a past workout</h3>
+      <label>Date</label>
+      <input id="mDate" type="date" />
+      <label>Start time</label>
+      <input id="mTime" type="time" />
+      <label>Duration (minutes)</label>
+      <input id="mMins" type="number" min="1" max="600" value="30" />
+      <label>What did you do?</label>
+      <input id="mType" type="text" placeholder="e.g. Gym legs, swim…" maxlength="120" />
+      <div class="modal-actions">
+        <button id="manualSave" class="btn primary" type="button">Save</button>
+        <button class="btn ghost close-overlay" type="button">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Sick day -->
+    <div id="sickModal" class="modal hidden">
+      <h3>Log a sick / recovery day</h3>
+      <p class="muted small">Doesn't earn money and doesn't count as a missed workout. Uses one of your allowance.</p>
+      <label>Date</label>
+      <input id="sDate" type="date" />
+      <label>Note (optional)</label>
+      <input id="sType" type="text" placeholder="e.g. Flu, rest day…" maxlength="120" />
+      <div class="modal-actions">
+        <button id="sickSave" class="btn primary" type="button">Save</button>
+        <button class="btn ghost close-overlay" type="button">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Drilldown -->
+    <div id="detailModal" class="modal wide hidden">
+      <div class="detail-head">
+        <h3 id="detailName">—</h3>
+        <button class="btn ghost close-overlay" type="button">✕</button>
+      </div>
+      <div id="detailSummary" class="detail-summary"></div>
+      <div id="detailList" class="detail-list"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js"></script>
+</body>
+</html>
