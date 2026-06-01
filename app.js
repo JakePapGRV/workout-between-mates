@@ -465,6 +465,13 @@
     });
   }
 
+  // "Jake" · "Jake & Trent" · "Jake, Trent & Mitchell"
+  function joinNames(names) {
+    if (names.length <= 1) return names[0] || "";
+    if (names.length === 2) return names[0] + " & " + names[1];
+    return names.slice(0, -1).join(", ") + " & " + names[names.length - 1];
+  }
+
   function renderPayout() {
     const box = $("payout");
     const rows = standings();
@@ -472,22 +479,31 @@
       box.innerHTML = `<p class="muted">Add at least two mates to see the payout.</p>`;
       return;
     }
-    const winner = rows[0];
-    const loser = rows[rows.length - 1];
-    const diff = winner.s.earned - loser.s.earned;
+    const topEarned = rows[0].s.earned;
+    const bottomEarned = rows[rows.length - 1].s.earned;
+    const diff = topEarned - bottomEarned;
+    const leaders = rows.filter((r) => r.s.earned === topEarned);
+    const leaderNames = joinNames(leaders.map((r) => escapeHtml(r.p.name)));
 
-    let html = `<p class="lead">🏆 <b>${escapeHtml(winner.p.name)}</b> leads with <b>$${winner.s.earned}</b>.</p>`;
+    let html;
     if (diff === 0) {
-      html += `<p class="muted">Everyone's level — no one owes anything yet.</p>`;
+      // Whole group is level — don't crown any single person.
+      html = `<p class="lead">🤝 Everyone's level on <b>$${topEarned}</b> — no one owes anything yet.</p>`;
     } else {
-      html += `<p>By the agreement, the lowest pays the winner the difference:</p>`;
-      html += `<div class="payout-row"><span>${escapeHtml(loser.p.name)} → ${escapeHtml(winner.p.name)}</span><span class="owes">$${diff}</span></div>`;
+      const verb = leaders.length > 1 ? "lead" : "leads";
+      html = `<p class="lead">🏆 <b>${leaderNames}</b> ${verb} with <b>$${topEarned}</b>.</p>`;
+      html += `<p>By the agreement, the lowest pays the difference to the top:</p>`;
+      rows
+        .filter((r) => r.s.earned === bottomEarned)
+        .forEach((l) => {
+          html += `<div class="payout-row"><span>${escapeHtml(l.p.name)} → ${leaderNames}</span><span class="owes">$${diff}</span></div>`;
+        });
     }
-    if (rows.length > 2) {
+    if (rows.length > 2 && diff !== 0) {
       html += `<p class="muted small" style="margin-top:14px">Each mate's gap to the leader (handy if you'd rather everyone settle up to the winner):</p>`;
-      rows.slice(1).forEach((r) => {
-        const g = winner.s.earned - r.s.earned;
-        html += `<div class="payout-row"><span>${escapeHtml(r.p.name)}</span><span>${g === 0 ? "—" : "$" + g + " behind"}</span></div>`;
+      rows.forEach((r) => {
+        const g = topEarned - r.s.earned;
+        html += `<div class="payout-row"><span>${escapeHtml(r.p.name)}</span><span>${g === 0 ? "leading" : "$" + g + " behind"}</span></div>`;
       });
     }
     box.innerHTML = html;
