@@ -446,11 +446,14 @@
     const medals = ["🥇", "🥈", "🥉"];
     box.innerHTML = "";
     rows.forEach((r, i) => {
+      // Standard competition ranking: anyone on the same money shares a place,
+      // and the next person skips ahead (e.g. 1, 1, 3 — not 1, 2, 3).
+      const rank = rows.filter((o) => o.s.earned > r.s.earned).length + 1;
       const el = document.createElement("div");
       el.className = "lb-row" + (r.p.id === me ? " me" : "");
       el.onclick = () => openDetail(r.p.id);
       el.innerHTML = `
-        <div class="lb-rank">${medals[i] || i + 1}</div>
+        <div class="lb-rank">${medals[rank - 1] || rank}</div>
         ${avatarHtml(r.p.name)}
         <div class="lb-main">
           <div class="lb-name">${escapeHtml(r.p.name)}${r.p.id === me ? " (you)" : ""}</div>
