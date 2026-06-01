@@ -235,7 +235,7 @@
     participants.forEach((p) => {
       const b = document.createElement("button");
       b.className = "pick";
-      b.textContent = p.name;
+      b.innerHTML = avatarHtml(p.name, "lg") + `<span>${escapeHtml(p.name)}</span>`;
       b.onclick = () => selectMe(p.id);
       box.appendChild(b);
     });
@@ -352,7 +352,7 @@
   function openDetail(pid) {
     currentDetailPid = pid;
     const s = analyze(pid);
-    $("detailName").textContent = nameOf(pid);
+    $("detailName").innerHTML = avatarHtml(nameOf(pid), "lg") + `<span>${escapeHtml(nameOf(pid))}</span>`;
     $("detailSummary").innerHTML = `
       <span><b>$${s.earned}</b>earned</span>
       <span><b>${s.countedCount}</b>counted</span>
@@ -395,6 +395,20 @@
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
+  function initialsOf(name) {
+    return String(name || "?").trim().charAt(0).toUpperCase();
+  }
+  function avatarHtml(name, cls) {
+    const map = CFG.AVATARS || {};
+    const src = map[name] || "avatars/" + String(name).toLowerCase().replace(/[^a-z0-9]+/g, "") + ".jpg";
+    const pos = (CFG.AVATAR_POS || {})[name] || "center top";
+    return (
+      `<span class="avatar ${cls || ""}">` +
+      `<span class="avatar-i">${escapeHtml(initialsOf(name))}</span>` +
+      `<img src="${escapeHtml(src)}" alt="" style="object-position:${escapeHtml(pos)}" onerror="this.remove()">` +
+      `</span>`
+    );
+  }
 
   /* ---------------------------------------------------------------
    *  Render
@@ -411,7 +425,7 @@
 
     const who = $("whoami");
     if (me && participants.some((p) => p.id === me)) {
-      who.textContent = "👤 " + nameOf(me);
+      who.innerHTML = avatarHtml(nameOf(me), "sm") + `<span>${escapeHtml(nameOf(me))}</span>`;
       who.classList.remove("hidden");
       who.onclick = switchUser;
     } else {
@@ -437,6 +451,7 @@
       el.onclick = () => openDetail(r.p.id);
       el.innerHTML = `
         <div class="lb-rank">${medals[i] || i + 1}</div>
+        ${avatarHtml(r.p.name)}
         <div class="lb-main">
           <div class="lb-name">${escapeHtml(r.p.name)}${r.p.id === me ? " (you)" : ""}</div>
           <div class="lb-sub">${r.s.countedCount} workouts · this week ${r.s.currentWeekCounted}/${RULES.maxPerWeek}</div>

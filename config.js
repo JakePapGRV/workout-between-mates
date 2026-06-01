@@ -17,4 +17,21 @@ window.WC_CONFIG = {
   MAX_WORKOUTS_PER_WEEK: 4,  // only this many earn per week
   DOLLARS_PER_WORKOUT: 5,    // $ earned per counting workout
   SICK_DAYS_ALLOWANCE: 4,    // sick/recovery days allowed across the challenge
+
+  // --- Profile photos (files live in the /avatars folder) ---
+  // If a file is missing, the app just shows the person's initial instead.
+  AVATARS: {
+    Jake: "avatars/jake.jpg",
+    Trent: "avatars/trent.jpg",
+    Mitchell: "avatars/mitchell.jpg",
+  },
+
+  // Photos are pre-cropped to square headshots, so they already sit nicely
+  // in the circle. (This still lets you nudge the focus if you swap in a
+  // non-square photo later: e.g. Trent: "center top".)
+  AVATAR_POS: {
+    Jake: "center",
+    Trent: "center",
+    Mitchell: "center",
+  },
 };

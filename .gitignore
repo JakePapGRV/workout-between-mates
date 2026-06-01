@@ -4,3 +4,6 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# Full-size original photos (we only deploy the cropped avatars)
+avatars/_original/
