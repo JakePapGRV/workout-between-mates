@@ -17,6 +17,7 @@ window.WC_CONFIG = {
   MAX_WORKOUTS_PER_WEEK: 4,  // only this many earn per week
   DOLLARS_PER_WORKOUT: 5,    // $ earned per counting workout
   SICK_DAYS_ALLOWANCE: 4,    // sick/recovery days allowed across the challenge
+  SICK_DAY_DOLLARS: 5,       // $ earned per sick/recovery day (within the allowance)
 
   // --- Profile photos (files live in the /avatars folder) ---
   // If a file is missing, the app just shows the person's initial instead.

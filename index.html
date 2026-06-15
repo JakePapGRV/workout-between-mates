@@ -18,6 +18,18 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ===== Loading screen ===== -->
+  <div id="splash" class="splash">
+    <div class="splash-inner">
+      <div class="splash-brand">
+        <span class="splash-logo">🏋️</span>
+        <h1 class="splash-title">Workout Challenge</h1>
+      </div>
+      <div class="splash-bar"><i></i></div>
+      <div id="splashLosers" class="splash-losers"></div>
+    </div>
+  </div>
+
   <!-- ===== Header ===== -->
   <header class="topbar">
     <div class="brand">
@@ -70,7 +82,7 @@
         <button id="discardBtn" class="btn ghost hidden" type="button">Discard</button>
       </div>
       <div class="secondary-actions">
-        <button id="manualBtn" class="btn link" type="button">＋ Log past workout</button>
+        <button id="manualBtn" class="btn link" type="button">＋ Log workout manually</button>
         <button id="sickBtn" class="btn link" type="button">🤒 Log sick day</button>
       </div>
     </section>
@@ -117,9 +129,8 @@
 
     <!-- Manual log -->
     <div id="manualModal" class="modal hidden">
-      <h3>Log a past workout</h3>
-      <label>Date</label>
-      <input id="mDate" type="date" />
+      <h3>Log today's workout</h3>
+      <p id="mToday" class="muted small">For today.</p>
       <label>Start time</label>
       <input id="mTime" type="time" />
       <label>Duration (minutes)</label>
@@ -135,9 +146,7 @@
     <!-- Sick day -->
     <div id="sickModal" class="modal hidden">
       <h3>Log a sick / recovery day</h3>
-      <p class="muted small">Doesn't earn money and doesn't count as a missed workout. Uses one of your allowance.</p>
-      <label>Date</label>
-      <input id="sDate" type="date" />
+      <p id="sickNote" class="muted small">For today. Earns money and doesn't count as a missed workout. Uses one of your allowance.</p>
       <label>Note (optional)</label>
       <input id="sType" type="text" placeholder="e.g. Flu, rest day…" maxlength="120" />
       <div class="modal-actions">

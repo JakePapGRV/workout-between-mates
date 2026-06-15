@@ -263,3 +263,61 @@ label { font-size: 0.85rem; color: var(--muted); display: block; margin-top: 10p
   .overlay { align-items: center; }
   .modal { border-radius: 18px; }
 }
+
+/* ---- Loading screen ---- */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: radial-gradient(1200px 600px at 50% -10%, #1a2350 0%, var(--bg) 55%);
+  transition: opacity 0.55s ease;
+}
+.splash.hide { opacity: 0; pointer-events: none; }
+.splash-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 26px;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
+.splash-brand { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.splash-logo { font-size: 4rem; line-height: 1; }
+.splash-title { font-size: 1.5rem; margin: 0; }
+.splash-bar {
+  width: 200px;
+  max-width: 80%;
+  height: 6px;
+  background: var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.splash-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary), var(--green));
+  animation: splashFill 1.7s ease-out forwards;
+}
+@keyframes splashFill {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+.splash-losers {
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.splash-losers-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+.splash-loser { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 700; }
+.splash-loser-cap { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--gold); }
+.splash-loser-cap.muted { color: var(--muted); font-weight: 600; font-size: 1rem; }

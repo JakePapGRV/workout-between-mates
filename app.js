@@ -15,6 +15,7 @@
     maxPerWeek: CFG.MAX_WORKOUTS_PER_WEEK ?? 4,
     dollars: CFG.DOLLARS_PER_WORKOUT ?? 5,
     sickAllowance: CFG.SICK_DAYS_ALLOWANCE ?? 4,
+    sickDollars: CFG.SICK_DAY_DOLLARS ?? 5,
   };
 
   const startDate = parseLocalDate(CFG.CHALLENGE_START || "2026-05-25");
@@ -39,6 +40,8 @@
   let tick = null; // timer interval
   let loaded = false; // becomes true after the first data load
   let loadError = null; // last data-load error message, if any
+  const splashStart = Date.now(); // when the loading screen first appeared
+  let splashHideScheduled = false; // so we only dismiss the loading screen once
 
   const $ = (id) => document.getElementById(id);
   const overlay = $("overlay");
@@ -94,7 +97,8 @@
     too_soon: { label: "Within " + CFG.MIN_GAP_HOURS + "h of last", cls: "b-soon" },
     weekly_cap: { label: "Weekly cap reached", cls: "b-cap" },
     out_of_period: { label: "Outside dates", cls: "b-out" },
-    sick: { label: "Sick day", cls: "b-sick" },
+    sick: { label: "Sick day +$" + RULES.sickDollars, cls: "b-sick" },
+    sick_over: { label: "Over sick limit", cls: "b-out" },
   };
 
   function analyze(pid) {
@@ -117,8 +121,17 @@
       let earns = 0;
 
       if (w.is_sick_day) {
-        status = "sick";
-        sickUsed++;
+        if (start < startDate || start >= endDate) {
+          status = "out_of_period";
+        } else if (sickUsed < RULES.sickAllowance) {
+          status = "sick";
+          earns = RULES.sickDollars;
+          earned += earns;
+          sickUsed++;
+        } else {
+          status = "sick_over";
+          sickUsed++;
+        }
       } else if (start < startDate || start >= endDate) {
         status = "out_of_period";
       } else if (w.duration_seconds < RULES.minDurationSec) {
@@ -169,6 +182,7 @@
       loadError = (pRes.error || wRes.error).message;
       console.error(pRes.error || wRes.error);
       renderAll();
+      scheduleSplashHide();
       return;
     }
     loadError = null;
@@ -176,6 +190,7 @@
     workouts = wRes.data || [];
     loaded = true;
     renderAll();
+    scheduleSplashHide();
   }
 
   async function logWorkout({ startedAt, endedAt, type, sick }) {
@@ -325,14 +340,13 @@
 
   function openManual() {
     const now = new Date();
-    $("mDate").value = toDateInput(now);
+    $("mToday").textContent = "For today, " + fmtDate(now) + ".";
     $("mTime").value = toTimeInput(now);
     $("mMins").value = 30;
     $("mType").value = "";
     openOverlay("manualModal");
   }
   function openSick() {
-    $("sDate").value = toDateInput(new Date());
     $("sType").value = "";
     openOverlay("sickModal");
   }
@@ -516,14 +530,56 @@
       `At least <b>${CFG.MIN_GAP_HOURS} hours</b> must pass between workouts that count.`,
       `Up to <b>${RULES.maxPerWeek} workouts a week</b> earn money — extras are encouraged but pay $0.`,
       `Each counting workout earns <b>$${RULES.dollars}</b> (max $${RULES.dollars * RULES.maxPerWeek}/week).`,
-      `<b>${RULES.sickAllowance} sick/recovery days</b> across the challenge — they don't earn but aren't penalised.`,
+      `<b>${RULES.sickAllowance} sick/recovery days</b> across the challenge — each one earns <b>$${RULES.sickDollars}</b> (extras beyond that pay $0).`,
       `At the end, the lowest total pays the difference to the highest. Honour system — no dodgy counting!`,
     ]
       .map((t) => `<li>${t}</li>`)
       .join("");
   }
 
+  /* ---------------------------------------------------------------
+   *  Loading screen
+   * ------------------------------------------------------------- */
+  // Show whoever isn't winning the challenge as the "losers".
+  function renderSplashLosers() {
+    const box = $("splashLosers");
+    if (!box) return;
+    const rows = standings();
+    if (rows.length < 2) {
+      box.innerHTML = "";
+      return;
+    }
+    const topEarned = rows[0].s.earned;
+    const losers = rows.filter((r) => r.s.earned < topEarned);
+    if (!losers.length) {
+      box.innerHTML = `<p class="splash-loser-cap muted">All level — no losers yet 👀</p>`;
+      return;
+    }
+    const chips = losers
+      .map((r) => `<div class="splash-loser">${avatarHtml(r.p.name, "lg")}</div>`)
+      .join("");
+    const names = joinNames(losers.map((r) => escapeHtml(r.p.name)));
+    const caption = losers.length === 1 ? `${names} is a loser` : `${names} are Losers`;
+    box.innerHTML = `<div class="splash-losers-row">${chips}</div><p class="splash-loser-cap">${caption}</p>`;
+  }
+
+  // Dismiss the loading screen, but keep it up long enough that the
+  // losers actually register before it fades away.
+  function scheduleSplashHide() {
+    if (splashHideScheduled) return;
+    splashHideScheduled = true;
+    const elapsed = Date.now() - splashStart;
+    const wait = Math.max(0, 2000 - elapsed);
+    setTimeout(() => {
+      const splash = $("splash");
+      if (!splash) return;
+      splash.classList.add("hide");
+      setTimeout(() => splash.remove(), 600);
+    }, wait);
+  }
+
   function renderAll() {
+    renderSplashLosers();
     renderHeader();
     if (!sb) {
       $("setupBanner").classList.remove("hidden");
@@ -588,10 +644,9 @@
     $("refreshBtn").onclick = loadData;
 
     $("manualSave").onclick = async () => {
-      const date = $("mDate").value;
+      const date = toDateInput(new Date()); // today only
       const time = $("mTime").value || "12:00";
       const mins = Math.max(1, parseInt($("mMins").value, 10) || 0);
-      if (!date) return alert("Pick a date.");
       const started = new Date(`${date}T${time}`);
       const ended = new Date(started.getTime() + mins * 60000);
       const ok = await logWorkout({ startedAt: started, endedAt: ended, type: $("mType").value });
@@ -599,8 +654,7 @@
     };
 
     $("sickSave").onclick = async () => {
-      const date = $("sDate").value;
-      if (!date) return alert("Pick a date.");
+      const date = toDateInput(new Date()); // today only
       const at = new Date(`${date}T12:00`);
       const ok = await logWorkout({
         startedAt: at,
@@ -628,7 +682,12 @@
   function init() {
     wire();
     renderAll();
-    if (!sb) return;
+    // Safety net: never let the loading screen hang if the network stalls.
+    setTimeout(scheduleSplashHide, 6000);
+    if (!sb) {
+      scheduleSplashHide();
+      return;
+    }
     loadData();
     sb.channel("wc-changes")
       .on("postgres_changes", { event: "*", schema: "public", table: "workouts" }, loadData)
