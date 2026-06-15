@@ -569,7 +569,7 @@
     if (splashHideScheduled) return;
     splashHideScheduled = true;
     const elapsed = Date.now() - splashStart;
-    const wait = Math.max(0, 2000 - elapsed);
+    const wait = Math.max(0, 4000 - elapsed);
     setTimeout(() => {
       const splash = $("splash");
       if (!splash) return;
