@@ -148,6 +148,7 @@ code { background: #0c1330; padding: 2px 6px; border-radius: 6px; font-size: 0.8
 .payout-card .lead { font-size: 1.05rem; margin: 4px 0 12px; }
 .payout-row { display: flex; justify-content: space-between; padding: 7px 0; border-top: 1px solid var(--line); font-size: 0.92rem; }
 .owes { color: var(--danger); font-weight: 700; }
+.gets { color: var(--green); font-weight: 700; }
 
 /* ---- Identity ---- */
 .pickgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 12px 0; }
