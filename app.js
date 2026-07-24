@@ -585,7 +585,7 @@
     if (splashHideScheduled) return;
     splashHideScheduled = true;
     const elapsed = Date.now() - splashStart;
-    const wait = Math.max(0, 8000 - elapsed);
+    const wait = Math.max(0, 6000 - elapsed);
     setTimeout(() => {
       const splash = $("splash");
       if (!splash) return;
@@ -699,7 +699,7 @@
     wire();
     renderAll();
     // Safety net: never let the loading screen hang if the network stalls.
-    setTimeout(scheduleSplashHide, 8500);
+    setTimeout(scheduleSplashHide, 6500);
     if (!sb) {
       scheduleSplashHide();
       return;
