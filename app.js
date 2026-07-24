@@ -575,8 +575,7 @@
     const chips = losers
       .map((r) => `<div class="splash-loser">${avatarHtml(r.p.name, "lg")}</div>`)
       .join("");
-    const names = joinNames(losers.map((r) => escapeHtml(r.p.name)));
-    const caption = losers.length === 1 ? `${names} is a lazy bitch` : `${names} are lazy bitches`;
+    const caption = "Jake misses his friends, Jake wants them to hurry up and come back, Jake is sorry";
     box.innerHTML = `<div class="splash-losers-row">${chips}</div><p class="splash-loser-cap">${caption}</p>`;
   }
 
