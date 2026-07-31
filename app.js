@@ -575,7 +575,7 @@
     const chips = losers
       .map((r) => `<div class="splash-loser">${avatarHtml(r.p.name, "lg")}</div>`)
       .join("");
-    const caption = "Jake misses his friends, Jake wants them to hurry up and come back, Jake is sorry";
+    const caption = "Trent and Mitch need to lose Holiday Weight";
     box.innerHTML = `<div class="splash-losers-row">${chips}</div><p class="splash-loser-cap">${caption}</p>`;
   }
 
@@ -585,7 +585,7 @@
     if (splashHideScheduled) return;
     splashHideScheduled = true;
     const elapsed = Date.now() - splashStart;
-    const wait = Math.max(0, 6000 - elapsed);
+    const wait = Math.max(0, 4500 - elapsed);
     setTimeout(() => {
       const splash = $("splash");
       if (!splash) return;
@@ -699,7 +699,7 @@
     wire();
     renderAll();
     // Safety net: never let the loading screen hang if the network stalls.
-    setTimeout(scheduleSplashHide, 6500);
+    setTimeout(scheduleSplashHide, 5000);
     if (!sb) {
       scheduleSplashHide();
       return;
